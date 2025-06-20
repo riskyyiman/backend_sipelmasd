@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const admin = require('../firebaseAdmin'); // ← Import admin SDK
 
 // 🔐 POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -92,6 +93,25 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint untuk hitung jumlah user
+router.get('/user-count', async (req, res) => {
+  try {
+    let userCount = 0;
+    let nextPageToken;
+
+    do {
+      const result = await admin.auth().listUsers(1000, nextPageToken);
+      userCount += result.users.length;
+      nextPageToken = result.pageToken;
+    } while (nextPageToken);
+
+    res.json({ totalUsers: userCount });
+  } catch (error) {
+    console.error('Error getting user count:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

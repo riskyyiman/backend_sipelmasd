@@ -51,6 +51,15 @@ const resolvers = {
       }
     },
 
+    updatePengaduan: async (_, { id, judul, kategori, lokasi, deskripsi, status }, context) => {
+      try {
+        const updated = await Pengaduan.findByIdAndUpdate(id, { judul, kategori, lokasi, deskripsi, status }, { new: true });
+        return updated;
+      } catch (err) {
+        throw new Error('Gagal memperbarui pengaduan: ' + err.message);
+      }
+    },
+
     tambahPengaduan: async (_, { judul, kategori, lokasi, deskripsi }, { user }) => {
       if (!user || !user.id) throw new Error('Anda harus login terlebih dahulu');
 

@@ -26,6 +26,10 @@ const typeDefs = gql`
   type Mutation {
     hapusPengaduan(id: ID!): Boolean
     tambahPengaduan(judul: String!, kategori: String, lokasi: String, deskripsi: String!): Pengaduan
+    updatePengaduan(id: ID!, judul: String!, kategori: String!, lokasi: String, deskripsi: String!, status: String!): Pengaduan
+
+    # ✅ Tambahan baru
+    ubahStatusPengaduan(id: ID!, status: String!): Pengaduan
   }
 `;
 

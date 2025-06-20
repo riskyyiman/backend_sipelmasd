@@ -5,12 +5,19 @@ const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
 const typeDefs = require('./graphql/schemas/pengaduan.schema');
 const resolvers = require('./graphql/resolvers/pengaduan.resolver');
-const admin = require('./firebaseAdmin'); // ✅ Tambahkan Firebase Admin SDK
+const admin = require('./firebaseAdmin');
+const authRoutes = require('./routes/auth');
+const pengaduanRoutes = require('./routes/pengaduan');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use(authRoutes);
+
+// Routes
+app.use('/api/pengaduan', pengaduanRoutes);
 
 // MongoDB
 mongoose
