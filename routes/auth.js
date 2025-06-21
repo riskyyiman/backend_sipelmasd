@@ -115,4 +115,86 @@ router.get('/user-count', async (req, res) => {
   }
 });
 
+// ✅ Ambil semua user dari MongoDB
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Gagal mengambil data user' });
+  }
+});
+
+// GET /api/users → ambil semua user
+router.get('/', async (req, res) => {
+  try {
+    const users = await User.find({}, '-password'); // tidak tampilkan password
+    res.json(users);
+  } catch (err) {
+    console.error('Gagal mengambil data user:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/users → tambah user
+router.post('/', async (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ message: 'Semua field wajib diisi' });
+  }
+
+  try {
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ message: 'User sudah ada' });
+
+    const newUser = new User({ name, email, password, role });
+    const saved = await newUser.save();
+    res.status(201).json(saved);
+  } catch (err) {
+    console.error('Gagal menambah user:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT /api/users/:id → update user
+router.put('/:id', async (req, res) => {
+  try {
+    const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
+  } catch (err) {
+    console.error('Gagal update user:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// DELETE /api/users/:id → hapus user
+router.delete('/:id', async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User dihapus' });
+  } catch (err) {
+    console.error('Gagal hapus user:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/auth/users firebase
+router.get('/users', async (req, res) => {
+  try {
+    const listUsersResult = await admin.auth().listUsers();
+    const users = listUsersResult.users.map((user) => ({
+      uid: user.uid,
+      email: user.email,
+      provider: user.providerData[0]?.providerId,
+      createdAt: user.metadata.creationTime,
+      lastSignIn: user.metadata.lastSignInTime,
+    }));
+    res.json(users);
+  } catch (error) {
+    console.error('Error listing users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
 module.exports = router;

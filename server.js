@@ -6,27 +6,26 @@ const { ApolloServer } = require('apollo-server-express');
 const typeDefs = require('./graphql/schemas/pengaduan.schema');
 const resolvers = require('./graphql/resolvers/pengaduan.resolver');
 const admin = require('./firebaseAdmin');
+
 const authRoutes = require('./routes/auth');
 const pengaduanRoutes = require('./routes/pengaduan');
+const userRoutes = require('./routes/users');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.use(authRoutes);
-
-// Routes
+// REST routes
+app.use('/api/auth', authRoutes);
 app.use('/api/pengaduan', pengaduanRoutes);
+app.use('/api/users', userRoutes);
 
 // MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB Connected'))
   .catch((err) => console.error(err));
-
-// REST routes
-app.use('/api/auth', require('./routes/auth'));
 
 // Apollo Server
 async function startApolloServer() {
@@ -39,14 +38,14 @@ async function startApolloServer() {
 
       if (token) {
         try {
-          const decoded = await admin.auth().verifyIdToken(token); // ✅ Verifikasi token dari Firebase
-          return { user: { id: decoded.uid } }; // Kirim user ke resolver
+          const decoded = await admin.auth().verifyIdToken(token);
+          return { user: { id: decoded.uid } };
         } catch (err) {
           console.error('Token tidak valid:', err.message);
         }
       }
 
-      return { user: null }; // Tidak login
+      return { user: null };
     },
   });
 
