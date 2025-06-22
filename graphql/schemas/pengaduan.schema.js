@@ -12,6 +12,13 @@ const typeDefs = gql`
     userId: String!
   }
 
+  input LaporanFilterInput {
+    status: String
+    kategori: String
+    lokasi: String
+    keyword: String
+  }
+
   type PengaduanListResult {
     items: [Pengaduan]
     total: Int
@@ -21,6 +28,7 @@ const typeDefs = gql`
     daftarPengaduan: [Pengaduan]
     pengaduanById(id: ID!): Pengaduan
     pengaduanList(page: Int!, perPage: Int!, search: String, filter: String): PengaduanListResult
+    pengaduan(filter: LaporanFilterInput): [Pengaduan]
   }
 
   type Mutation {
