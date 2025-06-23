@@ -40,42 +40,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// LOGIN - Admin
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  console.log('Received data:', { email, password });
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User tidak ditemukan' });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Password salah' });
-
-    const token = jwt.sign({ id: user._id, role: user.role }, 'RAHASIA_SECRET', { expiresIn: '1d' });
-
-    res.status(200).json({
-      message: 'Login berhasil',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 // 🔐 POST /api/auth/login
 router.post('/login', async (req, res) => {
-  console.log('Received data:', req.body); // Log data masuk
+  console.log('Received data:', req.body);
   const { email, password } = req.body;
-
-  console.log('LOGIN attempt:', { email, password }); // Tambahkan ini
 
   if (!email || !password) {
     return res.status(400).json({ message: 'Email dan password wajib diisi' });
@@ -84,19 +52,23 @@ router.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Email tidak ditemukan' });
+      return res.status(404).json({ message: 'User tidak ditemukan' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Password salah' });
+      return res.status(401).json({ message: 'Password salah' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '1d',
+    });
 
-    res.json({
+    res.status(200).json({
+      message: 'Login berhasil',
       token,
       user: {
+        id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
