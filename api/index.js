@@ -72,5 +72,10 @@ async function setupApolloServer() {
   }
 })();
 
+// Tambahkan sebelum module.exports = app;
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'API is working ✅', uptime: process.uptime() });
+});
+
 // Untuk Vercel
 module.exports = app;
